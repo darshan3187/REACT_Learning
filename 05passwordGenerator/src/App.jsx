@@ -63,8 +63,8 @@ function App() {
   // JSX code
   return (
     <>
-      <div className="w-full max-w-md mx-auto shadow-md rounded-lg px-4 my-8 text-orange-500 bg-gray-800">
-        <h1 className="text-xl pt-4 text-center">Password Generator</h1>
+      <div className="w-full max-w-md mx-auto shadow-md rounded-lg px-4 my-8 text-orange-700 bg-gray-800">
+        <h1 className="text-xl pt-4 text-center text-sky-600">Password Generator</h1>
         {/* This shows password & we copy it */}
         <div className="flex-shadow rounded-lg overflow-hidden mb-4 flex">
           <input
