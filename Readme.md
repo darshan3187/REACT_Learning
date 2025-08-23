@@ -1,2 +1,2 @@
 Hello New
-This is react learning
+react learning
