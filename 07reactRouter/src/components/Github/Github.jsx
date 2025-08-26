@@ -13,7 +13,7 @@ function Github() {
         <div className='text-3xl font-bold p-5 bg-gray-500 text-white text-center'>
             Github Followers: {data.followers}
             <div className='flex justify-center items-center '>
-                <img className="w-80 mt-4" src={data.avatar_url} alt="Git picture" />
+                <img className="w-80 mt-4 rounded-[50%]" src={data.avatar_url} alt="Git picture" />
             </div>
 
         </div>
