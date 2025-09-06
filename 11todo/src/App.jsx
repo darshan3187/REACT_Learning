@@ -3,6 +3,7 @@ import { TodoProvider } from './contexts'
 import './App.css'
 import TodoForm from './components/TodoForm'
 import Todoitem from './components/Todoitem'
+import Spline from '@splinetool/react-spline';
 
 function App() {
   const [todos, setTodos] = useState([])
@@ -48,6 +49,7 @@ function App() {
 
   return (
     <TodoProvider value={{ todos, addTodo, updateTodo, deleteTodo, toggleComplete }}>
+      <Spline scene="https://prod.spline.design/q4qzDOvK9qh8a7B0/scene.splinecode" />
       <div className="bg-[#172842] rounded-4xl min-h-screen py-8">
         <div className="w-full max-w-2xl mx-auto shadow-md rounded-lg px-4 py-3 text-white">
           <h1 className="text-2xl font-bold text-center  mb-8 mt-2">Manage Your Todos</h1>

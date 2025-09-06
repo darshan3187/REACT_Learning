@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@splinetool/runtime": "^1.10.56",
     "@tailwindcss/vite": "^4.1.12",
+    "@types/animejs": "^3.1.13",
+    "@types/lodash.debounce": "^4.0.9",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.12"
