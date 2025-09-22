@@ -7,6 +7,7 @@ import store from './store/store.js'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import { AuthLayout, Login } from './components/index.js'
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 
 import AddPost from "./pages/AddPost";
