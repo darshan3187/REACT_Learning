@@ -1,11 +1,13 @@
-import { Play, Pause, SkipForward, SkipBack, Shuffle, Repeat, Repeat1 } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Shuffle, Repeat, Repeat1, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import gsap from 'gsap';
 import { usePlayer } from '../context/PlayerContext';
 
 export default function PlayerControls() {
   const {
+    appReady,
+    currentTrack,
     isPlaying,
+    isBuffering,
     duration,
     shuffle,
     repeatMode,
@@ -21,10 +23,18 @@ export default function PlayerControls() {
 
   const [currentTime, setCurrentTime] = useState(0);
 
+  // Instantly reset the UI time when switching tracks to prevent lingering progress visually
+  useEffect(() => {
+    setCurrentTime(0);
+  }, [currentTrack]);
+
   // Sync seek bar progress locally to avoid global re-renders
   useEffect(() => {
     let interval;
-    if (isPlaying) {
+    // We strictly wait until duration > 0. Why? Because during the 1-2 seconds
+    // when YouTube is buffering a new song, getCurrentTime() throws out STALE times 
+    // from the previous song. This prevents the timestamp from "jumping" unevenly!
+    if (isPlaying && duration > 0) {
       interval = setInterval(() => {
         if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
           setCurrentTime(playerRef.current.getCurrentTime() || 0);
@@ -34,18 +44,28 @@ export default function PlayerControls() {
       if (interval) clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, playerRef]);
+  }, [isPlaying, duration, playerRef]);
 
   const playBtnRef = useRef(null);
 
   // Animate play/pause button on state change
   useEffect(() => {
-    if (playBtnRef.current) {
-      gsap.fromTo(playBtnRef.current, 
-        { scale: 0.8 }, 
+    let mounted = true;
+
+    if (!playBtnRef.current) return undefined;
+
+    // Optimization: load GSAP only when this animation runs.
+    import('gsap').then(({ default: gsap }) => {
+      if (!mounted || !playBtnRef.current) return;
+      gsap.fromTo(playBtnRef.current,
+        { scale: 0.8 },
         { scale: 1, duration: 0.3, ease: 'back.out(1.7)' }
       );
-    }
+    });
+
+    return () => {
+      mounted = false;
+    };
   }, [isPlaying]);
 
   const formatTime = (seconds) => {
@@ -58,26 +78,27 @@ export default function PlayerControls() {
   return (
     <div className="w-full flex flex-col items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
       {/* Progress Bar */}
-      <div className="w-full flex items-center justify-between gap-4 text-xs text-gray-500 font-medium">
+      <div className="w-full flex items-center justify-between gap-4 text-xs text-gray-600 font-medium">
         <span>{formatTime(currentTime)}</span>
-        <div 
-          className="flex-1 h-1.5 bg-black/10 rounded-full cursor-pointer relative group"
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / rect.width;
-            seekTo(pos * duration);
+        <input
+          type="range"
+          min={0}
+          max={Math.max(Math.floor(duration), 0)}
+          value={Math.min(Math.floor(currentTime), Math.max(Math.floor(duration), 0))}
+          step={1}
+          onChange={(event) => {
+            const value = Number(event.target.value);
+            seekTo(value);
+            setCurrentTime(value);
           }}
-        >
-          <div 
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full transition-all duration-100 cursor-pointer"
-            style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-          />
-          {/* Knob */}
-          <div 
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md shadow-gray-400 cursor-pointer pointer-events-none"
-            style={{ left: `calc(${duration > 0 ? (currentTime / duration) * 100 : 0}% - 6px)` }}
-          />
-        </div>
+          disabled={!appReady}
+          aria-label="Seek"
+          aria-valuemin={0}
+          aria-valuemax={Math.max(Math.floor(duration), 0)}
+          aria-valuenow={Math.min(Math.floor(currentTime), Math.max(Math.floor(duration), 0))}
+          aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
+          className={`flex-1 accent-red-500 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+        />
         <span>{formatTime(duration)}</span>
       </div>
 
@@ -85,7 +106,9 @@ export default function PlayerControls() {
       <div className="flex items-center justify-between w-full px-2 mt-2">
         <button 
           onClick={toggleShuffle} 
-          className={`transition-colors p-2 ${shuffle ? 'text-cyan-600 drop-shadow-md' : 'text-gray-500 hover:text-gray-900'}`}
+          disabled={!appReady}
+          aria-label={shuffle ? 'Disable shuffle' : 'Enable shuffle'}
+          className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors p-2 ${shuffle ? 'text-cyan-600 drop-shadow-md' : 'text-gray-600 hover:text-gray-900'} ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <Shuffle size={20} />
         </button>
@@ -93,7 +116,9 @@ export default function PlayerControls() {
         <div className="flex items-center gap-4 sm:gap-6">
           <button 
             onClick={prev}
-            className="text-gray-800 hover:text-cyan-600 transition-colors p-2"
+            disabled={!appReady}
+            aria-label="Previous track"
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-800 hover:text-cyan-600 transition-colors p-2 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <SkipBack size={28} fill="currentColor" />
           </button>
@@ -101,9 +126,13 @@ export default function PlayerControls() {
           <button 
             ref={playBtnRef}
             onClick={isPlaying ? pause : play}
-            className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center bg-gray-900 text-white rounded-full hover:scale-105 active:scale-95 transition-transform shadow-[0_0_20px_rgba(0,0,0,0.1)]"
+            disabled={!appReady}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            className={`w-14 h-14 sm:w-16 sm:h-16 min-w-[44px] min-h-[44px] flex items-center justify-center bg-gray-900 text-white rounded-full hover:scale-105 active:scale-95 transition-transform shadow-[0_0_20px_rgba(0,0,0,0.1)] ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {isPlaying ? (
+            {isBuffering ? (
+              <Loader2 size={28} className="animate-spin" />
+            ) : isPlaying ? (
               <Pause size={32} fill="currentColor" />
             ) : (
               <Play size={32} fill="currentColor" className="ml-1" />
@@ -112,7 +141,9 @@ export default function PlayerControls() {
           
           <button 
             onClick={next}
-            className="text-gray-800 hover:text-cyan-600 transition-colors p-2"
+            disabled={!appReady}
+            aria-label="Next track"
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-800 hover:text-cyan-600 transition-colors p-2 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <SkipForward size={28} fill="currentColor" />
           </button>
@@ -120,7 +151,9 @@ export default function PlayerControls() {
         
         <button 
           onClick={toggleRepeat} 
-          className={`transition-colors p-2 ${repeatMode !== 'off' ? 'text-cyan-600 drop-shadow-md' : 'text-gray-500 hover:text-gray-900'}`}
+          disabled={!appReady}
+          aria-label={`Repeat mode: ${repeatMode}`}
+          className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors p-2 ${repeatMode !== 'off' ? 'text-cyan-600 drop-shadow-md' : 'text-gray-600 hover:text-gray-900'} ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {repeatMode === 'one' ? <Repeat1 size={20} /> : <Repeat size={20} />}
         </button>

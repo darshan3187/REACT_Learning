@@ -1,49 +1,30 @@
-import { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial } from '@react-three/drei';
-
-function VisualizerShape({ isPlaying, color }) {
-  const meshRef = useRef();
-
-  useFrame(({ clock }) => {
-    if (isPlaying) {
-      meshRef.current.rotation.x = clock.getElapsedTime() * 0.2;
-      meshRef.current.rotation.y = clock.getElapsedTime() * 0.3;
-      // Slight pulsating effect based on time
-      const scale = 1 + Math.sin(clock.getElapsedTime() * 4) * 0.05;
-      meshRef.current.scale.set(scale, scale, scale);
-    } else {
-      // Idle slight movement
-      meshRef.current.rotation.x = clock.getElapsedTime() * 0.05;
-      meshRef.current.rotation.y = clock.getElapsedTime() * 0.05;
-    }
-  });
-
-  return (
-    <Sphere ref={meshRef} args={[1.5, 64, 64]} scale={1.2}>
-      <MeshDistortMaterial
-        color={color || "#8a2be2"}
-        attach="material"
-        distort={isPlaying ? 0.6 : 0.2} // More distortion when playing
-        speed={isPlaying ? 4 : 1}
-        roughness={0.2}
-        metalness={0.8}
-        clearcoat={1}
-        clearcoatRoughness={0.1}
-      />
-    </Sphere>
-  );
-}
-
 export default function AudioVisualizer({ isPlaying, color }) {
   return (
-    <div className="absolute inset-0 z-0 w-full h-full pointer-events-none opacity-50">
-      <Canvas camera={{ position: [0, 0, 4] }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1.5} color="#ffffff" />
-        <directionalLight position={[-10, -10, -5]} intensity={0.5} color={color} />
-        <VisualizerShape isPlaying={isPlaying} color={color} />
-      </Canvas>
+    <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
+      <div
+        style={{
+          background: color || '#8a2be2',
+          opacity: 0.15,
+          animation: isPlaying
+            ? 'orb-pulse 2s ease-in-out infinite alternate'
+            : 'orb-idle 4s ease-in-out infinite alternate',
+          position: 'absolute'
+        }}
+        className="-top-20 -left-20 w-72 h-72 rounded-full blur-3xl transition-all duration-1000"
+        aria-hidden="true"
+      />
+      <div
+        style={{
+          background: color || '#8a2be2',
+          opacity: 0.2,
+          animation: isPlaying
+            ? 'orb-pulse 1.2s ease-in-out infinite alternate'
+            : 'orb-idle 3s ease-in-out infinite alternate',
+          position: 'absolute'
+        }}
+        className="bottom-[-5rem] right-[-5rem] w-48 h-48 sm:w-56 sm:h-56 rounded-full blur-3xl transition-all duration-1000"
+        aria-hidden="true"
+      />
     </div>
   );
 }
