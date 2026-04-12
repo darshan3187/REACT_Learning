@@ -76,10 +76,10 @@ export default function PlayerControls() {
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+    <div className="w-full flex flex-col items-center gap-2 sm:gap-4 mt-3 sm:mt-8">
       {/* Progress Bar */}
-      <div className="w-full flex items-center justify-between gap-4 text-xs text-gray-600 font-medium">
-        <span>{formatTime(currentTime)}</span>
+      <div className="w-full flex items-center justify-between gap-2 sm:gap-4 text-[11px] sm:text-xs text-gray-600 font-medium">
+        <span className="w-9 sm:w-10 text-left tabular-nums">{formatTime(currentTime)}</span>
         <input
           type="range"
           min={0}
@@ -97,28 +97,29 @@ export default function PlayerControls() {
           aria-valuemax={Math.max(Math.floor(duration), 0)}
           aria-valuenow={Math.min(Math.floor(currentTime), Math.max(Math.floor(duration), 0))}
           aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
-          className={`flex-1 accent-red-500 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+          style={{ accentColor: '#dc2626' }}
+          className={`flex-1 bg-red-500 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
         />
-        <span>{formatTime(duration)}</span>
+        <span className="w-9 sm:w-10 text-right tabular-nums">{formatTime(duration)}</span>
       </div>
 
       {/* Main Controls */}
-      <div className="flex items-center justify-between w-full px-2 mt-2">
+      <div className="flex items-center justify-between w-full px-1 sm:px-2 mt-1 sm:mt-2">
         <button 
           onClick={toggleShuffle} 
           disabled={!appReady}
           aria-label={shuffle ? 'Disable shuffle' : 'Enable shuffle'}
-          className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors p-2 ${shuffle ? 'text-cyan-600 drop-shadow-md' : 'text-gray-600 hover:text-gray-900'} ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors p-2 ${shuffle ? 'text-red-600 drop-shadow-md' : 'text-gray-600 hover:text-red-600'} ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <Shuffle size={20} />
         </button>
         
-        <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-2 sm:gap-6">
           <button 
             onClick={prev}
             disabled={!appReady}
             aria-label="Previous track"
-            className={`min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-800 hover:text-cyan-600 transition-colors p-2 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-800 hover:text-red-600 transition-colors p-2 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <SkipBack size={28} fill="currentColor" />
           </button>
@@ -143,7 +144,7 @@ export default function PlayerControls() {
             onClick={next}
             disabled={!appReady}
             aria-label="Next track"
-            className={`min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-800 hover:text-cyan-600 transition-colors p-2 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-800 hover:text-red-600 transition-colors p-2 ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <SkipForward size={28} fill="currentColor" />
           </button>
@@ -153,7 +154,7 @@ export default function PlayerControls() {
           onClick={toggleRepeat} 
           disabled={!appReady}
           aria-label={`Repeat mode: ${repeatMode}`}
-          className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors p-2 ${repeatMode !== 'off' ? 'text-cyan-600 drop-shadow-md' : 'text-gray-600 hover:text-gray-900'} ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors p-2 ${repeatMode !== 'off' ? 'text-red-600 drop-shadow-md' : 'text-gray-600 hover:text-red-600'} ${!appReady ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {repeatMode === 'one' ? <Repeat1 size={20} /> : <Repeat size={20} />}
         </button>
